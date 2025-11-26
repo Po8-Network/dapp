@@ -1,0 +1,13 @@
+{
+  "name": "po8-dapp-contracts",
+  "version": "0.1.0",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test"
+  },
+  "devDependencies": {
+    "hardhat": "^2.14.0",
+    "@nomicfoundation/hardhat-toolbox": "^2.0.0"
+  }
+}
+
