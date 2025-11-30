@@ -6,9 +6,9 @@
     "test": "hardhat test"
   },
   "devDependencies": {
-    "hardhat": "^2.14.0",
-    "@nomicfoundation/hardhat-toolbox": "^2.0.0"
+    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "axios": "^1.13.2",
+    "concurrently": "^9.2.1",
+    "hardhat": "^2.14.0"
   }
 }
-
-

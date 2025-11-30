@@ -24,5 +24,15 @@ cd frontend
 npm install
 npm run dev
 ```
+Or run from the project root using `npm run dev` (starts on port 3001).
+
+## Testing
+
+Run contract and integration tests:
+```bash
+npx hardhat test
+```
+*Note: Requires a running po8-node for full integration tests.*
+
 
 
