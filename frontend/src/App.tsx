@@ -59,19 +59,10 @@ function App() {
     // Attempt standard eth_getBalance (if Node supports it, which we should add)
     // Or use the custom 'get_balance' for now if we know we are on Po8.
     try {
-        // Using low-level request for custom method if needed, or standard if aligned.
-        // Let's assume we want to align to standard, but for now we might fallback.
-        
-        // Ethers provider wrapper
-        // const provider = new ethers.BrowserProvider(window.ethereum);
-        // const bal = await provider.getBalance(address);
-        
-        // Direct request to support our custom node for now
-        const bal = await window.ethereum.request({ 
-            method: 'get_balance', 
-            params: [address] 
-        });
-        setBalance(bal);
+        // Use standard Ethers provider now that Node supports eth_getBalance
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const bal = await provider.getBalance(address);
+        setBalance(ethers.formatEther(bal));
     } catch (err) {
         console.error("Fetch balance failed", err);
     }
@@ -97,9 +88,80 @@ function App() {
       {status && <p style={{ color: 'orange' }}>{status}</p>}
 
       <div style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', maxWidth: '400px' }}>
-        <h3>Smart Contract Interaction</h3>
-        <p>Deploy contracts using Hardhat, then interact here.</p>
-        {/* Placeholder for future interactions */}
+        <h3>Quantum Bridge</h3>
+        
+        <div style={{ marginBottom: '10px' }}>
+            <label style={{display:'block', marginBottom:'5px', fontSize:'12px'}}>Bridge Contract Address</label>
+            <input 
+                style={{width:'100%', padding:'8px'}} 
+                placeholder="0x..." 
+                id="bridgeAddr" 
+            />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+            <label style={{display:'block', marginBottom:'5px', fontSize:'12px'}}>Destination Chain</label>
+            <input 
+                style={{width:'100%', padding:'8px'}} 
+                placeholder="e.g. Ethereum" 
+                id="destChain" 
+            />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+            <label style={{display:'block', marginBottom:'5px', fontSize:'12px'}}>Destination Address</label>
+            <input 
+                style={{width:'100%', padding:'8px'}} 
+                placeholder="0x..." 
+                id="destAddr" 
+            />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+            <label style={{display:'block', marginBottom:'5px', fontSize:'12px'}}>Amount (PO8)</label>
+            <input 
+                style={{width:'100%', padding:'8px'}} 
+                placeholder="0.0" 
+                type="number"
+                id="amount" 
+            />
+        </div>
+
+        <button 
+            onClick={async () => {
+                const bridgeAddr = (document.getElementById('bridgeAddr') as HTMLInputElement).value;
+                const destChain = (document.getElementById('destChain') as HTMLInputElement).value;
+                const destAddr = (document.getElementById('destAddr') as HTMLInputElement).value;
+                const amount = (document.getElementById('amount') as HTMLInputElement).value;
+
+                if (!bridgeAddr || !destChain || !destAddr || !amount) {
+                    setStatus("Please fill all fields");
+                    return;
+                }
+
+                try {
+                    setStatus("Locking funds...");
+                    const provider = new ethers.BrowserProvider(window.ethereum);
+                    const signer = await provider.getSigner();
+                    
+                    const bridgeAbi = [
+                        "function lock(string destinationChain, string destinationAddress) external payable"
+                    ];
+                    
+                    const contract = new ethers.Contract(bridgeAddr, bridgeAbi, signer);
+                    const tx = await contract.lock(destChain, destAddr, { value: ethers.parseEther(amount) });
+                    setStatus("Transaction sent: " + tx.hash);
+                    await tx.wait();
+                    setStatus("Funds Locked Successfully!");
+                    fetchBalance(await signer.getAddress());
+                } catch (e: any) {
+                    setStatus("Error: " + (e.reason || e.message));
+                }
+            }}
+            style={{ padding: '10px 20px', fontSize: '16px', width: '100%', background: '#38bdf8', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+        >
+            Lock Funds
+        </button>
       </div>
     </div>
   );
